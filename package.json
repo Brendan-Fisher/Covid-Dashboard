@@ -1,0 +1,11 @@
+{
+  "name": "covid19dashboard",
+  "version": "1.0.0",
+  "description": "Dashboard to view Covid case and testing trends",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brendan Fisher, Anna Le, Samantha Martinez, Alexander Kim",
+  "license": "ISC"
+}
