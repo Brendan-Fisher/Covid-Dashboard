@@ -2,45 +2,17 @@ import  React, { Component }from "react";
 import { queryDatabase } from "../actions/sendQuery";
 import './styles/Dashboard.css'; 
 import { Accordion, Card } from 'react-bootstrap';
-import TableView from './TableView';
 import { Bar, Line } from 'react-chartjs-2';
-
-
-function randomRGB(){
-    var o = Math.round, r = Math.random, s = 255;
-    return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + 128 + ',' + .7 + ')';
-}
+import { buildGraphData, buildTable } from './functions';
 
 async function sendQuery(query){
     var result = await queryDatabase(query);
 
-    let labels = [];
-    let data = [];
-    let backgroundColors = [];
+    console.log(result);
+    var graphData = buildGraphData(result);
+    var table = buildTable(result);
 
-    for(var i = 0; i < result.rows.length; i++){
-        labels.push(result.rows[i][0]);
-        data.push(result.rows[i][1]);
-        backgroundColors.push(randomRGB());
-    }
-
-    let datasets = [{
-        label: query,
-        fill: true,
-        lineTension: .5,
-        borderColor: 'rgba(0,0,0,1)',
-        hoverBorderColor: 'rgba(255,99,132,1)',
-        data: data,
-        borderWidth: 2,
-        backgroundColor: backgroundColors,
-    }]
-    
-    let displayedData =  {
-        labels: labels,
-        datasets: datasets,
-    }
-
-    return displayedData;
+    return {graphData, table};
 }
 
 
@@ -52,15 +24,19 @@ class Dashboard extends Component {
             buildGraph: false,
             tupleCount: 0,
             graphData: {},
+            table: <div></div>,
         }
     }
 
     async onSendQuery(query){
         let data = await sendQuery(query);
+        console.log(data);
         this.setState({
-            graphData: data,
+            graphData: data.graphData,
+            table: data.table,
             buildGraph: true
         })
+        console.log(this.state);
     }
 
     onTupleCount = () =>{
@@ -114,6 +90,7 @@ class Dashboard extends Component {
                                         <Accordion.Collapse eventKey="1">
                                             <Card.Body>
                                                 Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                                                <hr></hr>
                                                 <button onClick={() => this.onSendQuery("CasesBySex")} type="button" class="btn btn-outline-dark">Cases By Sex</button>
                                             </Card.Body>
                                         </Accordion.Collapse>
@@ -146,12 +123,12 @@ class Dashboard extends Component {
                                 </div>
                             </div>
                             <div id="chart">
-                             <Bar data={this.state.graphData} options={{title:{display: false}, legend: {display:false}}} />
+                             <Bar data={this.state.graphData} options={{maintainAspectRation: true, title:{display: false}, legend: {display:false}}} />
                             </div>
                             <div id="tableView" className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                                 <h2>Table View</h2>
                             </div>
-                            <TableView data={this.state.queryResult} />
+                            {this.state.table}
                         </main>
                     </div>
                 </div>

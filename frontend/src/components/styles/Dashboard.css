@@ -44,9 +44,16 @@
 }
 
 main {
-    height: 100vh;
-    position: relative;
+    right: 0;
+    height: 100%;
+    display: inline-block;
+    position: fixed;
     margin-left: auto;
+    overflow: scroll;
+}
+
+nav {
+    position: fixed;
 }
 
 #chart {
@@ -55,4 +62,10 @@ main {
 
 #tableView {
     margin-top: 1.5rem;
+}
+
+canvas {
+    position: relative;
+    width: 100%!important;
+    height: 100%!important;
 }
