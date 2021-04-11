@@ -17,7 +17,7 @@ router.route("/").post(async function(req, res) {
         })
 
         const result = await connection.execute(
-            `SELECT COUNT(*) FROM CDC`
+            "SELECT SEX, COUNT(SEX) FROM CDC WHERE SEX = 'Male' OR SEX = 'Female' OR SEX = 'Unknown' GROUP BY SEX"
         );
         res.json(result);
     } catch (err) {

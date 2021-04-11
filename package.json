@@ -13,6 +13,7 @@
   "author": "Brendan Fisher, Anna Le, Samantha Martinez, Alexander Kim",
   "license": "ISC",
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.3",
     "@popperjs/core": "^2.9.1",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",
@@ -25,6 +26,7 @@
     "oracledb": "^5.1.0",
     "popper.js": "^1.16.1",
     "react": "^17.0.2",
+    "react-bootstrap": "^1.5.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^5.2.0"
   },

@@ -1,6 +1,7 @@
 import  React, { Component }from "react";
 import { queryDatabase } from "../actions/sendQuery";
 import './styles/Landing.css'; 
+import { Link } from 'react-router-dom';
 
 class Landing extends Component {
     constructor(props){
@@ -11,7 +12,7 @@ class Landing extends Component {
     }
 
     onSendQuery = (query) => {
-        queryDatabase("SELECT COUNT(*) FROM CDC")
+        queryDatabase("SELECT SEX FROM CDC WHERE SEX = 'Male' OR SEX = 'Female' OR SEX = 'Unknown'")
             .then((res) => {
                 this.setState({
                     queryResult: res,
@@ -24,7 +25,7 @@ class Landing extends Component {
             <div id="container" className="container">
                 <div id="content" className="row">
                     <div id="box" className="col">
-                        Hello
+                        
                     </div>
                 </div>
             </div>
