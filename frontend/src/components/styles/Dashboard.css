@@ -1,5 +1,6 @@
 .navbar-brand {
-    padding-top: .75rem;
+    padding-top: 1rem !important;
+    height: 60px;
     padding-bottom: .75rem;
     font-size: 1rem;
     background-color: rgba(0, 0, 0, .25);
@@ -27,8 +28,8 @@
 
 .sidebar-sticky {
     position: sticky;
-    top: 48px;
-    height: calc(100vh - 48px);
+    top: 60px;
+    height: calc(100vh - 60px);
     padding-top: .5rem;
     overflow-x: hidden;
     overflow-y: auto;
@@ -50,6 +51,10 @@ main {
     position: fixed;
     margin-left: auto;
     overflow: scroll;
+}
+
+.navbar{
+    height:60px;
 }
 
 nav {

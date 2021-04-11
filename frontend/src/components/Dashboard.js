@@ -8,11 +8,11 @@ import { buildGraphData, buildTable } from './functions';
 async function sendQuery(query){
     var result = await queryDatabase(query);
 
-    console.log(result);
-    var graphData = buildGraphData(result);
-    var table = buildTable(result);
+    var userQuery = result.query;
+    var graphData = buildGraphData(result.result);
+    var table = buildTable(result.result);
 
-    return {graphData, table};
+    return {graphData, table, userQuery};
 }
 
 
@@ -25,18 +25,23 @@ class Dashboard extends Component {
             tupleCount: 0,
             graphData: {},
             table: <div></div>,
+            startDate: "",
+            endDate: "",
+            stateOne: "Nationwide",
+            stateTwo: "Nationwide",
+            query: " "
         }
     }
 
     async onSendQuery(query){
+        this.setState({query : query})
         let data = await sendQuery(query);
-        console.log(data);
         this.setState({
             graphData: data.graphData,
             table: data.table,
-            buildGraph: true
+            buildGraph: true,
+            query: data.userQuery,
         })
-        console.log(this.state);
     }
 
     onTupleCount = () =>{
@@ -57,6 +62,14 @@ class Dashboard extends Component {
             })
     }
 
+    onChange = (e) => {
+        this.setState({ [e.target.id]: e.target.value });
+    }
+
+    onSelectState = (e) => {
+        this.setState({[e.target.id] : e.target[e.target.options.selectedIndex].label})
+    }
+
     render() {
         return (
             <div>
@@ -68,10 +81,130 @@ class Dashboard extends Component {
                     <div className="row">
                         <nav className="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar">
                             <div className="sidebar-sticky">
-                                <h4>Welcome to the Covid-19 Dashboard</h4>
-                                <hr></hr>
-                                <h6>To begin, select a category you wish to analyze, then select a state and range of dates to narrow your analysis</h6>
-                                <hr></hr>
+                                <h4>Welcome to the Covid-19 Trend Dashboard</h4>
+                                <hr />
+                                <h6>To begin, select a range of dates to query and two states to compare. If you don't want to compare states, simply select the same state for both options</h6>
+                                <hr />
+                                <label style={{ marginRight: "1rem" }} for="start">Start Date: </label>
+                                <input onChange={this.onChange} type="date" id="startDate" value={this.state.startDate} name="query-start" min="2020-01-01" max="2021-03-16"></input>
+                                <br />
+                                <br />
+                                <label style={{ marginRight: "1rem" }} for="start">End Date: </label>
+                                <input onChange={this.onChange} type="date" id="endDate" value={this.state.endDate} name="query-end" min={this.state.startDate} max="2021-03-16"></input>
+                                <hr />
+                                <label>Compare States:</label><br/>
+                                <select id="stateOne" onChange={this.onSelectState}>
+                                    <option value="Nationwide">Nationwide</option>
+                                    <option value="AL">Alabama</option>
+                                    <option value="AK">Alaska</option>
+                                    <option value="AZ">Arizona</option>
+                                    <option value="AR">Arkansas</option>
+                                    <option value="CA">California</option>
+                                    <option value="CO">Colorado</option>
+                                    <option value="CT">Connecticut</option>
+                                    <option value="DE">Delaware</option>
+                                    <option value="DC">District Of Columbia</option>
+                                    <option value="FL">Florida</option>
+                                    <option value="GA">Georgia</option>
+                                    <option value="HI">Hawaii</option>
+                                    <option value="ID">Idaho</option>
+                                    <option value="IL">Illinois</option>
+                                    <option value="IN">Indiana</option>
+                                    <option value="IA">Iowa</option>
+                                    <option value="KS">Kansas</option>
+                                    <option value="KY">Kentucky</option>
+                                    <option value="LA">Louisiana</option>
+                                    <option value="ME">Maine</option>
+                                    <option value="MD">Maryland</option>
+                                    <option value="MA">Massachusetts</option>
+                                    <option value="MI">Michigan</option>
+                                    <option value="MN">Minnesota</option>
+                                    <option value="MS">Mississippi</option>
+                                    <option value="MO">Missouri</option>
+                                    <option value="MT">Montana</option>
+                                    <option value="NE">Nebraska</option>
+                                    <option value="NV">Nevada</option>
+                                    <option value="NH">New Hampshire</option>
+                                    <option value="NJ">New Jersey</option>
+                                    <option value="NM">New Mexico</option>
+                                    <option value="NY">New York</option>
+                                    <option value="NC">North Carolina</option>
+                                    <option value="ND">North Dakota</option>
+                                    <option value="OH">Ohio</option>
+                                    <option value="OK">Oklahoma</option>
+                                    <option value="OR">Oregon</option>
+                                    <option value="PA">Pennsylvania</option>
+                                    <option value="RI">Rhode Island</option>
+                                    <option value="SC">South Carolina</option>
+                                    <option value="SD">South Dakota</option>
+                                    <option value="TN">Tennessee</option>
+                                    <option value="TX">Texas</option>
+                                    <option value="UT">Utah</option>
+                                    <option value="VT">Vermont</option>
+                                    <option value="VA">Virginia</option>
+                                    <option value="WA">Washington</option>
+                                    <option value="WV">West Virginia</option>
+                                    <option value="WI">Wisconsin</option>
+                                    <option value="WY">Wyoming</option>
+                                </select>				
+                                <br />
+                                <label>vs.</label>
+                                <br />
+                                <select id="stateTwo" onChange={this.onSelectState}>
+                                    <option value="Nationwide">Nationwide</option>
+                                    <option value="AL">Alabama</option>
+                                    <option value="AK">Alaska</option>
+                                    <option value="AZ">Arizona</option>
+                                    <option value="AR">Arkansas</option>
+                                    <option value="CA">California</option>
+                                    <option value="CO">Colorado</option>
+                                    <option value="CT">Connecticut</option>
+                                    <option value="DE">Delaware</option>
+                                    <option value="DC">District Of Columbia</option>
+                                    <option value="FL">Florida</option>
+                                    <option value="GA">Georgia</option>
+                                    <option value="HI">Hawaii</option>
+                                    <option value="ID">Idaho</option>
+                                    <option value="IL">Illinois</option>
+                                    <option value="IN">Indiana</option>
+                                    <option value="IA">Iowa</option>
+                                    <option value="KS">Kansas</option>
+                                    <option value="KY">Kentucky</option>
+                                    <option value="LA">Louisiana</option>
+                                    <option value="ME">Maine</option>
+                                    <option value="MD">Maryland</option>
+                                    <option value="MA">Massachusetts</option>
+                                    <option value="MI">Michigan</option>
+                                    <option value="MN">Minnesota</option>
+                                    <option value="MS">Mississippi</option>
+                                    <option value="MO">Missouri</option>
+                                    <option value="MT">Montana</option>
+                                    <option value="NE">Nebraska</option>
+                                    <option value="NV">Nevada</option>
+                                    <option value="NH">New Hampshire</option>
+                                    <option value="NJ">New Jersey</option>
+                                    <option value="NM">New Mexico</option>
+                                    <option value="NY">New York</option>
+                                    <option value="NC">North Carolina</option>
+                                    <option value="ND">North Dakota</option>
+                                    <option value="OH">Ohio</option>
+                                    <option value="OK">Oklahoma</option>
+                                    <option value="OR">Oregon</option>
+                                    <option value="PA">Pennsylvania</option>
+                                    <option value="RI">Rhode Island</option>
+                                    <option value="SC">South Carolina</option>
+                                    <option value="SD">South Dakota</option>
+                                    <option value="TN">Tennessee</option>
+                                    <option value="TX">Texas</option>
+                                    <option value="UT">Utah</option>
+                                    <option value="VT">Vermont</option>
+                                    <option value="VA">Virginia</option>
+                                    <option value="WA">Washington</option>
+                                    <option value="WV">West Virginia</option>
+                                    <option value="WI">Wisconsin</option>
+                                    <option value="WY">Wyoming</option>
+                                </select>				
+                                <hr />
                                 <Accordion>
                                     <Card>
                                         <Accordion.Toggle as={Card.Header} eventKey="0">
@@ -115,7 +248,8 @@ class Dashboard extends Component {
                         </nav>
                         <main role="main" className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4 bg-light">
                             <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-                                <h1 className="h2">Query Result</h1>
+                                <h1 className="h2">Graph View</h1>
+                                <h5 className="h6">Query: {this.state.query}</h5>
                                 <div className="btn-toolbar mb-2 mb-md-0">
                                     <div className="btn-group mr-2">
                                         <button className="btn btn-sm btn-outline-success">Download Result</button>

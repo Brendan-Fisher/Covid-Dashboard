@@ -17,6 +17,8 @@ router.route("/").post(async function(req, res) {
             connectString: connectString,
         })
 
+        let query = "";
+
         switch(req.body.query){
             case "TupleCount":
                 result = await connection.execute(
@@ -24,13 +26,18 @@ router.route("/").post(async function(req, res) {
                 );
                 break;
             case 'CasesBySex':
+                query = "SELECT SEX AS Sex, COUNT(SEX) AS Quantity FROM CDC GROUP BY SEX ORDER BY COUNT(SEX) DESC";
                 result = await connection.execute(
                     "SELECT SEX AS Sex, COUNT(SEX) AS Quantity FROM CDC GROUP BY SEX ORDER BY COUNT(SEX) DESC"
                 );
                 break;
         }
 
-        res.json(result);
+        let response = {
+            query: query,
+            result: result,
+        }
+        res.json(response);
     } catch (err) {
         console.error(err);
     }
