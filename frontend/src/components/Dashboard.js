@@ -8,7 +8,8 @@ class Landing extends Component {
     constructor(props){
         super(props)
         this.state = {
-            queryResult: []
+            queryResult: [],
+            tupleCount: 0,
         }
     }
 
@@ -20,8 +21,26 @@ class Landing extends Component {
                 })
             })
             .catch((err) => {
-                console.log(err)
+                console.log(err);
             }) 
+    }
+
+    onTupleCount = () =>{
+        let sum = 0;
+
+        queryDatabase("TupleCount")
+            .then((res) => {
+                let row = res.rows[0];
+                for(var i = 0; i < res.rows.length; i++){
+                    sum += row[i];
+                }
+                this.setState({
+                    tupleCount: sum,
+                })
+            })
+            .catch((err) => {
+                console.log(err);
+            })
     }
 
     render() {
@@ -46,7 +65,7 @@ class Landing extends Component {
                                         </Accordion.Toggle>
                                         <Accordion.Collapse eventKey="0">
                                             <Card.Body>
-                                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
                                             </Card.Body>
                                         </Accordion.Collapse>
                                     </Card>
@@ -56,7 +75,20 @@ class Landing extends Component {
                                         </Accordion.Toggle>
                                         <Accordion.Collapse eventKey="1">
                                             <Card.Body>
-                                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                                            </Card.Body>
+                                        </Accordion.Collapse>
+                                    </Card>
+                                </Accordion>
+                                <hr></hr>
+                                <Accordion>
+                                    <Card>
+                                        <Accordion.Toggle as={Card.Header} eventKey="2">
+                                            <button onClick={this.onTupleCount} type="button" class="btn btn-outline-dark">Get Number of Stored Tuples</button>
+                                        </Accordion.Toggle>
+                                        <Accordion.Collapse eventKey="2">
+                                            <Card.Body>
+                                                Total stored tuples: {this.state.tupleCount}
                                             </Card.Body>
                                         </Accordion.Collapse>
                                     </Card>
@@ -65,6 +97,9 @@ class Landing extends Component {
                                 <a style={{color: "black" }} href="/github" className="col-sm-4 col-md-3 mr-0 col-lg-2"><i className="fab fa-github fa-3x"></i></a>
                             </div>
                         </nav>
+                        <main role="main" className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+                            
+                        </main>
                     </div>
                 </div>
             </div>

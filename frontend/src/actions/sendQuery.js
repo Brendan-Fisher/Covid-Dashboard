@@ -9,7 +9,7 @@ export async function queryDatabase(query){
         .post(API_URL + "/query", request)
         .then((result) => {
             console.log(result.data)
-            return result.data.rows;
+            return result.data;
         })
 }
 
