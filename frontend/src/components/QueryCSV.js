@@ -1,22 +1,35 @@
-import axios from 'axios';
 import React, { Component } from 'react';
-import { CSVLink } from "react-csv";
+import { CSVLink } from "react-csv-2";
+import { getDownload } from '../actions/sendQuery';
 
 const API_URL = "http://localhost:5000/api"
 
-class QueryCSV extends Component {
-    csvLink = React.createRef();
-    state = {data: []}
+async function getDownloadCSV(){
+    var data = await getDownload();
+    return data;
+}
 
-    fetchData = async () => {
-        await axios.get(API_URL + '/query/download')
-            .then(data => {
-                console.log(data);
-                this.setState({ data: data.data }, () => {
-                    this.csvLink.current.link.click()
-                })
-            })
+class QueryCSV extends Component {
+    constructor(props){
+        super(props)
+        this.state = {
+            
+            data: [],
+        }
+        this.fetchData = this.fetchData.bind(this);
+        this.csvLink = React.createRef();
     }
+   
+    async fetchData() {
+        let data = await getDownloadCSV()
+
+        console.log(data)
+        this.setState({ data: data.data }, () => {
+            this.csvLink.current.link.click();
+        })
+        console.log(this.state);
+    }
+
 
     render() {
         return (
@@ -29,7 +42,6 @@ class QueryCSV extends Component {
                     ref={this.csvLink}
                     target="_blank"
                 />
-                
             </div>
         )
     }

@@ -52,8 +52,8 @@ class Dashboard extends Component {
 
         queryDatabase("TupleCount")
             .then((res) => {
-                let row = res.rows[0];
-                for(var i = 0; i < res.rows.length; i++){
+                let row = res.result.rows[0];
+                for(var i = 0; i < row.length; i++){
                     sum += row[i];
                 }
                 this.setState({
@@ -255,7 +255,10 @@ class Dashboard extends Component {
                                 <h5 className="h6">Query: {this.state.query}</h5>
                                 <div className="btn-toolbar mb-2 mb-md-0">
                                     <div className="btn-group mr-2">
-                                        <QueryCSV />
+                                        {this.state.buildGraph &&
+                                            <QueryCSV />
+                                        }
+                                        
                                     </div>
                                 </div>
                             </div>

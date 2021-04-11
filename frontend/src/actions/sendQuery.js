@@ -14,3 +14,10 @@ export async function queryDatabase(query){
         })
 }
 
+export async function getDownload(){
+    return axios.get(API_URL + '/query/download')
+            .then(data => {
+                return data;
+            })
+}
+
