@@ -23,9 +23,8 @@ class Landing extends Component {
         return (
             <div id="container" className="container">
                 <div id="content" className="row">
-                    <div id="box" className="col">
-                        Hello
-                    </div>
+                    <button onClick={this.onSendQuery}>Get Tuple Count</button>
+                    <h1>{this.state.queryResult}</h1>
                 </div>
             </div>
         )

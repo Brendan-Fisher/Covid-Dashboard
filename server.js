@@ -25,6 +25,8 @@ try {
     process.exit(1);
 }
 
+
+
 app.use("/api/query", query);
 
 const port = process.env.port || 5000;
