@@ -33,3 +33,26 @@
     overflow-x: hidden;
     overflow-y: auto;
 }
+
+.chartjs-size-monitor {
+    position: absolute;
+    inset: 0px;
+    overflow: hidden;
+    pointer-events: none;
+    visibility: hidden;
+    z-index: -1;
+}
+
+main {
+    height: 100vh;
+    position: relative;
+    margin-left: auto;
+}
+
+#chart {
+    padding-top: 1.5rem;
+}
+
+#tableView {
+    margin-top: 1.5rem;
+}
