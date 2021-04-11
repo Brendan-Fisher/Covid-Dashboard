@@ -2,6 +2,9 @@ require("dotenv").config();
 const express = require('express');
 const router = express.Router();
 const oracledb = require('oracledb');
+var fs = require('fs');
+var es = require('event-stream');
+
 
 const username = process.env.DB_USERNAME;
 const password = process.env.DB_PASSWORD;
@@ -37,10 +40,47 @@ router.route("/").post(async function(req, res) {
             query: query,
             result: result,
         }
+
+        writeQueryResult(result);
+
         res.json(response);
     } catch (err) {
         console.error(err);
     }
 })
+
+router.route("/download").get((req, res) => {
+    let CSV = [];
+
+    let readStream = fs.createReadStream('./result/query_result.csv')
+                        .pipe(es.split())
+                        .pipe(
+                            es
+                                .mapSync(function(line) {
+                                    CSV.push(line.split(','))
+                                })
+                        )
+                        .on('end', function(){
+                            let cleanCSV = CSV.slice(0,CSV.length-1);
+                            //console.log(CSV);
+                            res.json(cleanCSV);
+                        })
+})
+
+function writeQueryResult(data){
+    //console.log(data);
+    let writeStream = fs.createWriteStream('./result/query_result.csv');
+
+    let headers = [];
+    data.metaData.forEach((header) => {
+        headers.push(header.name);
+    })
+
+    writeStream.write(headers.join(',') + '\n');
+
+    data.rows.forEach((row) => {
+        writeStream.write(row.join(',') + '\n');
+    })
+}
 
 module.exports = router;

@@ -4,6 +4,8 @@ import './styles/Dashboard.css';
 import { Accordion, Card } from 'react-bootstrap';
 import { Bar, Line } from 'react-chartjs-2';
 import { buildGraphData, buildTable } from './functions';
+import { CSVLink } from "react-csv";
+import QueryCSV from './QueryCSV';
 
 async function sendQuery(query){
     var result = await queryDatabase(query);
@@ -29,13 +31,14 @@ class Dashboard extends Component {
             endDate: "",
             stateOne: "Nationwide",
             stateTwo: "Nationwide",
-            query: " "
+            query: " ",
         }
     }
 
     async onSendQuery(query){
         this.setState({query : query})
         let data = await sendQuery(query);
+       
         this.setState({
             graphData: data.graphData,
             table: data.table,
@@ -252,7 +255,7 @@ class Dashboard extends Component {
                                 <h5 className="h6">Query: {this.state.query}</h5>
                                 <div className="btn-toolbar mb-2 mb-md-0">
                                     <div className="btn-group mr-2">
-                                        <button className="btn btn-sm btn-outline-success">Download Result</button>
+                                        <QueryCSV />
                                     </div>
                                 </div>
                             </div>
