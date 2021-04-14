@@ -41,3 +41,7 @@ body {
   background-color: #ffffff;
   position: relative;
 }
+
+button {
+  margin: 2px!important;
+}

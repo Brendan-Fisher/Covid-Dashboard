@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { CSVLink } from "react-csv-2";
 import { getDownload } from '../actions/sendQuery';
 
-const API_URL = "http://localhost:5000/api"
-
 async function getDownloadCSV(){
     var data = await getDownload();
     return data;
@@ -13,7 +11,6 @@ class QueryCSV extends Component {
     constructor(props){
         super(props)
         this.state = {
-            
             data: [],
         }
         this.fetchData = this.fetchData.bind(this);
@@ -42,7 +39,7 @@ class QueryCSV extends Component {
                     ref={this.csvLink}
                     target="_blank"
                 />
-            </div>
+            </div> 
         )
     }
 }
