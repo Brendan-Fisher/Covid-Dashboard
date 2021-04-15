@@ -48,7 +48,7 @@ class Dashboard extends Component {
     }
 
     async onSendQuery(query){
-        this.setState({query : query})
+        this.setState({query : "Loading Query Result"})
         let request = {
             query: query,
             startDate: this.state.startDate,
@@ -57,13 +57,19 @@ class Dashboard extends Component {
             stateTwo: this.state.stateTwo,
         }
 
+
+
         if(request.startDate !== "" || request.endDate !== ""){
-            console.log("setting line graph")
-            request.query += "OverTime";
-            request.type = "line"
-            this.setState({
-                type: "line",
-            })
+            if(request.startDate.substring(0,6) === request.endDate.substring(0,6)){
+                request.query += "OnDay";
+            }
+            else {
+                request.query += "OverTime";
+                request.type = "line"
+                this.setState({
+                    type: "line",
+                })
+            }            
         }
 
         let data = await sendQuery(request);
@@ -79,7 +85,8 @@ class Dashboard extends Component {
     onTupleCount = () =>{
         let sum = 0;
 
-        queryDatabase("TupleCount")
+        let query = {query: "TupleCount"};
+        queryDatabase(query)
             .then((res) => {
                 let row = res.result.rows[0];
                 for(var i = 0; i < row.length; i++){
@@ -123,6 +130,7 @@ class Dashboard extends Component {
                                 <br />
                                 <label style={{ marginRight: "1rem" }} for="start">End Date: </label>
                                 <input onChange={this.onChange} type="date" id="endDate" value={this.state.endDate} name="query-end" min={this.state.startDate} max="2021-02-13"></input>			
+                                <h6>To analyze data for a specific date, select the same date for start and end. If no graph appears, it is likely there is no data on that date and you should pick a nearby date.</h6>
                                 <hr />
                                 <Accordion>
                                     <Card>
@@ -257,6 +265,8 @@ class Dashboard extends Component {
                                                     <option value="WI">Wisconsin</option>
                                                     <option value="WY">Wyoming</option>
                                                 </select>	
+                                                <hr />
+                                                <button onClick={() => this.onSendQuery("GdpPerCase")} type="button" class="btn btn-outline-dark">Gdp Per Case</button>
                                             </Card.Body>
                                         </Accordion.Collapse>
                                     </Card>

@@ -52,10 +52,28 @@ router.route("/").post(async function(req, res) {
                     }
                 );
                 break;
+            case 'CasesBySexOnDay':
+                query = `SELECT Sex, COUNT(Sex) AS Quantity FROM CDC WHERE TO_CHAR(REFDATE, 'YYYY-MM-DD') = ${d2} GROUP BY Sex ORDER BY COUNT(Sex) DESC`;
+                result = await connection.execute(
+                    "SELECT Sex, COUNT(Sex) AS Quantity FROM CDC WHERE TO_CHAR(REFDATE, 'YYYY-MM-DD') = :d2 GROUP BY Sex ORDER BY COUNT(Sex) DESC",
+                    {
+                        d2: d2,
+                    }
+                )
+                break;
             case 'CasesByEthnicity':
                 query = "SELECT Ethnicity, COUNT(Ethnicity) AS Quantity FROM CDC GROUP BY Ethnicity ORDER BY COUNT(Ethnicity) DESC";
                 result = await connection.execute(
                     query,
+                )
+                break;
+            case 'CasesByEthnicityOnDay':
+                query = `SELECT Ethnicity, COUNT(Ethnicity) AS Quantity FROM CDC WHERE TO_CHAR(REFDATE, 'YYYY-MM-DD') = ${d2} GROUP BY Ethnicity ORDER BY COUNT(Ethnicity) DESC`;
+                result = await connection.execute(
+                    "SELECT Ethnicity, COUNT(Ethnicity) AS Quantity FROM CDC WHERE TO_CHAR(REFDATE, 'YYYY-MM-DD') = :d2 GROUP BY Ethnicity ORDER BY COUNT(Ethnicity) DESC",
+                    {
+                        d2: d2,
+                    }
                 )
                 break;
             case 'CasesByEthnicityOverTime':
@@ -75,6 +93,15 @@ router.route("/").post(async function(req, res) {
                     query,
                 )
                 break;
+            case 'CasesByAgeOnDay':
+                query = `SELECT Age, COUNT(Age) AS Quantity FROM CDC WHERE refDate = ${d2} GROUP BY Age ORDER BY COUNT(Age) DESC`;
+                result = await connection.execute(
+                    "SELECT Age, COUNT(Age) AS Quantity FROM CDC WHERE TO_CHAR(REFDATE, 'YYYY-MM-DD') = :d2 GROUP BY Age ORDER BY COUNT(Age) DESC",
+                    {
+                        d2: d2,
+                    }
+                )
+                break;
             case 'CasesByAgeOverTime':
                 query = `WITH R(Month, Age, Count) AS (SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, Age, COUNT(Age) AS Count FROM CDC WHERE TO_CHAR(REFDATE, 'YYYY-MM-DD') >= ${d1} AND TO_CHAR(REFDATE, 'YYYY-MM-DD') <= ${d2} GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Age) SELECT * FROM R`
                 sets = 11;
@@ -83,6 +110,29 @@ router.route("/").post(async function(req, res) {
                     {
                         d1: d1,
                         d2: d2
+                    }
+                )
+                break;
+            case 'GdpPerCase':
+                query = `SELECT Name, GdpPerCase FROM (SELECT gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT sum(posTotal) as posTotal, Name, gdp FROM Tests, State WHERE Tests.state=state.code AND (Name = ${s1} OR Name = ${s2}) GROUP BY Name, gdp))`
+                result = await connection.execute(
+                    "SELECT Name, GdpPerCase FROM (SELECT gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT sum(posTotal) as posTotal, Name, gdp FROM Tests, State WHERE Tests.state=state.code AND (Name = :s1 OR Name = :s2) GROUP BY Name, gdp))",
+                    {
+                        s1: s1,
+                        s2: s2,
+                    }
+                )
+                break;
+            case 'GdpPerCaseOverTime':
+                query = `SELECT Month, Name, GdpPerCase  FROM (SELECT Month, gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, sum(posTotal) as posTotal, Name, gdp FROM Tests, State WHERE Tests.state=state.code AND (Name = ${s1} OR Name = ${s2}) AND (TO_CHAR(REFDATE, 'YYYY-MM-DD') >= ${d1} AND TO_CHAR(REFDATE, 'YYYY-MM-DD') <= ${d2}) GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Name, gdp))`
+                sets = 2;
+                result = await connection.execute(
+                    "SELECT Month, Name, GdpPerCase FROM (SELECT Month, gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, sum(posTotal) as posTotal, Name, gdp FROM Tests, State WHERE Tests.state=state.code AND (Name = :s1 OR Name = :s2) AND (TO_CHAR(REFDATE, 'YYYY-MM-DD') >= :d1 AND TO_CHAR(REFDATE, 'YYYY-MM-DD') <= :d2) GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Name, gdp))",
+                    {
+                        s1: s1,
+                        s2: s2,
+                        d1: d1,
+                        d2: d2,
                     }
                 )
                 break;
