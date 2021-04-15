@@ -123,6 +123,12 @@ router.route("/").post(async function(req, res) {
                     }
                 )
                 break;
+            case 'GdpPerCaseNation':
+                query = `SELECT Name, GdpPerCase FROM (SELECT gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT sum(posTotal) as posTotal, Name, gdp FROM Tests, State GROUP BY Name, gdp)) ORDER BY GdpPerCase DESC`
+                result = await connection.execute(
+                    "SELECT Name, GdpPerCase FROM (SELECT gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT sum(posTotal) as posTotal, Name, gdp FROM Tests, State GROUP BY Name, gdp)) ORDER BY GdpPerCase DESC",
+                )
+                break;
             case 'GdpPerCaseOverTime':
                 query = `SELECT Month, Name, GdpPerCase  FROM (SELECT Month, gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, sum(posTotal) as posTotal, Name, gdp FROM Tests, State WHERE Tests.state=state.code AND (Name = ${s1} OR Name = ${s2}) AND (TO_CHAR(REFDATE, 'YYYY-MM-DD') >= ${d1} AND TO_CHAR(REFDATE, 'YYYY-MM-DD') <= ${d2}) GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Name, gdp))`
                 sets = 2;

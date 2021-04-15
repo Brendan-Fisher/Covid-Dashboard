@@ -144,6 +144,7 @@ class Dashboard extends Component {
                                                 <button onClick={() => this.onSendQuery("CasesBySex")} type="button" class="btn btn-outline-dark">Cases By Sex</button>
                                                 <button onClick={() => this.onSendQuery("CasesByEthnicity")} type="button" class="btn btn-outline-dark">Cases By Ethnicity</button>
                                                 <button onClick={() => this.onSendQuery("CasesByAge")} type="button" class="btn btn-outline-dark">Cases By Age Group</button>
+                                                <button onClick={() => this.onSendQuery("GdpPerCaseNation")} type="button" class="btn btn-outline-dark">GDP Per Case</button>
                                             </Card.Body>
                                         </Accordion.Collapse>
                                     </Card>
