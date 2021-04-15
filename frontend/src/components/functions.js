@@ -34,14 +34,15 @@ export function buildLineData(input){
     let labels = [];
     let sets = [];
     let borderColors = [];
-    let rows = input.result.rows;
 
     for(var i = 0; i < input.sets; i++){
         borderColors.push(randomRGB());
     }
 
     for(var i = 0; i < input.sets; i++){
-        sets.push(input.result.rows[i][1]);
+        if(sets.indexOf(input.result.rows[i][1]) === -1) {
+            sets.push(input.result.rows[i][1]);
+        }
     }
 
     for(var i = 0; i < input.result.rows.length; i++){
@@ -63,7 +64,7 @@ export function buildLineData(input){
         let data = [];
         for(var i = 0; i < sorted.length; i++){
             for(var j = 0; j < input.result.rows.length; j++){
-                if(input.result.rows[j][1] === sets[k] && input.result.rows[j][0] == sorted[i]){
+                if(input.result.rows[j][1] === sets[k] && input.result.rows[j][0] === sorted[i]){
                     data.push(input.result.rows[j][2]);
                 }
             }

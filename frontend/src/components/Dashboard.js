@@ -39,7 +39,7 @@ class Dashboard extends Component {
             graphData: {},
             table: <div></div>,
             startDate: "",
-            endDate: "",
+            endDate: "2021-02-13",
             stateOne: "Alabama",
             stateTwo: "Alabama",
             query: " ",
@@ -59,7 +59,7 @@ class Dashboard extends Component {
 
 
 
-        if(request.startDate !== "" || request.endDate !== ""){
+        if(request.startDate !== "" || request.endDate !== "2021-02-13"){
             if(request.startDate.substring(0,6) === request.endDate.substring(0,6)){
                 request.query += "OnDay";
             }
@@ -112,7 +112,7 @@ class Dashboard extends Component {
     render() {
         return (
             <div>
-                <nav className="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0">
+                <nav className="navbar navbar-dark sticky-top bg-primary flex-md-nowrap p-0">
                     <a className="navbar-brand col-sm-4 col-md-3 mr-0 col-lg-2" href="/">Covid-19 Dashboard</a>
                     <text className="nav-item">Brendan Fisher, Anna Le, Samantha Martinez, Alex Kim </text>
                 </nav>
@@ -141,10 +141,10 @@ class Dashboard extends Component {
                                             <Card.Body>
                                                 These trend queries represent Covid-19 trends nationally using data from the CDC.
                                                 <hr />
-                                                <button onClick={() => this.onSendQuery("CasesBySex")} type="button" class="btn btn-outline-dark">Cases By Sex</button>
-                                                <button onClick={() => this.onSendQuery("CasesByEthnicity")} type="button" class="btn btn-outline-dark">Cases By Ethnicity</button>
-                                                <button onClick={() => this.onSendQuery("CasesByAge")} type="button" class="btn btn-outline-dark">Cases By Age Group</button>
-                                                <button onClick={() => this.onSendQuery("GdpPerCaseNation")} type="button" class="btn btn-outline-dark">GDP Per Case</button>
+                                                <button onClick={() => this.onSendQuery("CasesBySex")} type="button" class="btn btn-outline-info">Cases By Sex</button>
+                                                <button onClick={() => this.onSendQuery("CasesByEthnicity")} type="button" class="btn btn-outline-info">Cases By Ethnicity</button>
+                                                <button onClick={() => this.onSendQuery("CasesByAge")} type="button" class="btn btn-outline-info">Cases By Age Group</button>
+                                                <button onClick={() => this.onSendQuery("GdpPerCaseNation")} type="button" class="btn btn-outline-info">GDP Per Case</button>
                                             </Card.Body>
                                         </Accordion.Collapse>
                                     </Card>
@@ -267,7 +267,7 @@ class Dashboard extends Component {
                                                     <option value="WY">Wyoming</option>
                                                 </select>	
                                                 <hr />
-                                                <button onClick={() => this.onSendQuery("GdpPerCase")} type="button" class="btn btn-outline-dark">Gdp Per Case</button>
+                                                <button onClick={() => this.onSendQuery("GdpPerCase")} type="button" class="btn btn-outline-info">Gdp Per Case</button>
                                             </Card.Body>
                                         </Accordion.Collapse>
                                     </Card>
@@ -276,7 +276,7 @@ class Dashboard extends Component {
                                 <Accordion>
                                     <Card>
                                         <Accordion.Toggle as={Card.Header} eventKey="2">
-                                            <button onClick={this.onTupleCount} type="button" class="btn btn-outline-dark">Get Number of Stored Tuples</button>
+                                            <button onClick={this.onTupleCount} type="button" class="btn btn-outline-info">Get Number of Stored Tuples</button>
                                         </Accordion.Toggle>
                                         <Accordion.Collapse eventKey="2">
                                             <Card.Body>
@@ -286,13 +286,13 @@ class Dashboard extends Component {
                                     </Card>
                                 </Accordion>
                                 <hr></hr>
-                                <a style={{color: "black" }} href="/github" className="col-sm-4 col-md-3 mr-0 col-lg-2"><i className="fab fa-github fa-3x"></i></a>
+                                <a style={{color: "bg-info" }} href="/github" className="col-sm-4 col-md-3 mr-0 col-lg-2"><i className="fab fa-github fa-3x"></i></a>
                             </div>
                         </nav>
                         <main role="main" className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4 bg-light">
                             <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                                 <h1 className="h2">Graph View</h1>
-                                <h5 className="h6" style={{maxWidth: "800px"}}>Query: {this.state.query}</h5>
+                                <h5 className="h6" style={{maxWidth: "800px"}}>Query: <code>{this.state.query}</code></h5>
                                 <div className="btn-toolbar mb-2 mb-md-0">
                                     <div className="btn-group mr-2">
                                         {this.state.buildGraph &&
