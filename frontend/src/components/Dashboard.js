@@ -2,8 +2,8 @@ import  React, { Component }from "react";
 import { queryDatabase } from "../actions/sendQuery";
 import './styles/Dashboard.css'; 
 import { Accordion, Card } from 'react-bootstrap';
-import { Bar, Line } from 'react-chartjs-2';
-import { buildBarData, buildLineData, buildTable } from './functions';
+import { Bar, Line, Radar } from 'react-chartjs-2';
+import { buildBarData, buildLineData, buildSingleState, buildDoubleAxis, buildTable } from './functions';
 import QueryCSV from './QueryCSV';
 
 async function sendQuery(query){
@@ -13,7 +13,13 @@ async function sendQuery(query){
     var userQuery = result.query;
     var graphData = {};
 
-    if(query.type === "line"){
+    if(query.type === "singleState"){
+        graphData = buildSingleState(result);
+    }
+    else if(query.type === "doubleAxis"){
+        graphData = buildDoubleAxis(result);
+    }
+    else if(query.type === "line"){
         graphData = buildLineData(result);
     }
     else {
@@ -37,11 +43,13 @@ class Dashboard extends Component {
             buildGraph: false,
             tupleCount: 0,
             graphData: {},
+            graph: <Bar data={[]} options={{maintainAspectRatio: true, title:{display: false}, legend: {display:false}}} />,
             table: <div></div>,
-            startDate: "",
+            startDate: "2020-01-01",
             endDate: "2021-02-13",
             stateOne: "Alabama",
             stateTwo: "Alabama",
+            singleState: "Alabama",
             query: " ",
             type: "bar"
         }
@@ -55,31 +63,66 @@ class Dashboard extends Component {
             endDate: this.state.endDate,
             stateOne: this.state.stateOne,
             stateTwo: this.state.stateTwo,
+            singleState: this.state.singleState,
+            type: '',
         }
 
 
 
-        if(request.startDate !== "" || request.endDate !== "2021-02-13"){
+        if(request.query === "TestResultRatio" || request.query === "HospitalizedICURatio"){
+            console.log("setting single state")
+            this.setState({type:"singleState"});
+            request.type = "singleState";
+        }
+        else if(request.query === "PositiveUniqueRatio"){
+            console.log("setting doubleaxis")
+            this.setState({type: "doubleAxis"})
+            request.type = "doubleAxis";
+        }
+        else if(request.startDate !== "" || request.endDate !== "2021-02-13"){
             if(request.startDate.substring(0,6) === request.endDate.substring(0,6)){
+                console.log("setting bar graph")
                 request.query += "OnDay";
+                this.setState({
+                    type: "bar",
+                })
+                request.type = "bar"
             }
             else {
+                console.log("setting line graph")
                 request.query += "OverTime";
-                request.type = "line"
                 this.setState({
                     type: "line",
                 })
+                request.type = "line"
             }            
         }
 
         let data = await sendQuery(request);
        
-        this.setState({
+        this.setState({ 
             graphData: data.graphData,
             table: data.table,
             buildGraph: true,
             query: data.userQuery,
         })
+
+        if(this.state.type === "line" || this.state.type === "singleState"){
+            console.log("setting line graph")
+            this.setState({
+                graph: <Line data={this.state.graphData} options={{maintainAspectRatio: true, title:{display: false}, legend: {display:true}}} />
+            })
+        }
+        else if(this.state.type === "doubleAxis"){
+            this.setState({
+                graph: <Line data={this.state.graphData} options={{scales: {yAxes: [{type: 'linear', display: true, position: 'left', id: 'y1'}, {type: 'linear', display: true, position: 'right', id: 'y2'}]}, maintainAspectRatio: true, title:{display: false}, legend: {display:true}}} />
+            })
+        }
+        else {
+            this.setState({
+                graph: <Bar data={this.state.graphData} options={{maintainAspectRatio: true, title:{display: false}, legend: {display:false}}} />,
+            })
+        }
     }
 
     onTupleCount = () =>{
@@ -144,19 +187,17 @@ class Dashboard extends Component {
                                                 <button onClick={() => this.onSendQuery("CasesBySex")} type="button" class="btn btn-outline-info">Cases By Sex</button>
                                                 <button onClick={() => this.onSendQuery("CasesByEthnicity")} type="button" class="btn btn-outline-info">Cases By Ethnicity</button>
                                                 <button onClick={() => this.onSendQuery("CasesByAge")} type="button" class="btn btn-outline-info">Cases By Age Group</button>
-                                                <button onClick={() => this.onSendQuery("GdpPerCaseNation")} type="button" class="btn btn-outline-info">GDP Per Case</button>
                                             </Card.Body>
                                         </Accordion.Collapse>
                                     </Card>
                                     <Card>
                                         <Accordion.Toggle as={Card.Header} eventKey="1">
-                                            State Trends
+                                            Compare States
                                         </Accordion.Toggle>
                                         <Accordion.Collapse eventKey="1">
                                             <Card.Body>
                                                 These trend queries represent Covid-19 trends by state. To compare two states, select two different states, to only view trends from a single state, select the same state for both choices. 
                                                 <hr />
-                                                <label>Compare States:</label><br/>
                                                 <select id="stateOne" onChange={this.onSelectState}>
                                                     <option value="AL">Alabama</option>
                                                     <option value="AK">Alaska</option>
@@ -267,7 +308,76 @@ class Dashboard extends Component {
                                                     <option value="WY">Wyoming</option>
                                                 </select>	
                                                 <hr />
-                                                <button onClick={() => this.onSendQuery("GdpPerCase")} type="button" class="btn btn-outline-info">Gdp Per Case</button>
+                                                <button onClick={() => this.onSendQuery("PopPositiveRatio")} type="button" class="btn btn-outline-info">% of Population Positive</button>
+                                                <button onClick={() => this.onSendQuery("PopDeathRatio")} type="button" class="btn btn-outline-info">% of Population Dead</button>
+                                            </Card.Body>
+                                        </Accordion.Collapse>
+                                    </Card>
+                                    <Card>
+                                        <Accordion.Toggle as={Card.Header} eventKey="2">
+                                            Individual States
+                                        </Accordion.Toggle>
+                                        <Accordion.Collapse eventKey="2">
+                                            <Card.Body>
+                                                These trend queries represent Covid-19 trends by state. Specifically, these queries intra-state comparisons about Covid-19 cases, tests, and outcomes 
+                                                <hr />
+                                                <select id="singleState" onChange={this.onSelectState}>
+                                                    <option value="AL">Alabama</option>
+                                                    <option value="AK">Alaska</option>
+                                                    <option value="AZ">Arizona</option>
+                                                    <option value="AR">Arkansas</option>
+                                                    <option value="CA">California</option>
+                                                    <option value="CO">Colorado</option>
+                                                    <option value="CT">Connecticut</option>
+                                                    <option value="DE">Delaware</option>
+                                                    <option value="DC">District Of Columbia</option>
+                                                    <option value="FL">Florida</option>
+                                                    <option value="GA">Georgia</option>
+                                                    <option value="HI">Hawaii</option>
+                                                    <option value="ID">Idaho</option>
+                                                    <option value="IL">Illinois</option>
+                                                    <option value="IN">Indiana</option>
+                                                    <option value="IA">Iowa</option>
+                                                    <option value="KS">Kansas</option>
+                                                    <option value="KY">Kentucky</option>
+                                                    <option value="LA">Louisiana</option>
+                                                    <option value="ME">Maine</option>
+                                                    <option value="MD">Maryland</option>
+                                                    <option value="MA">Massachusetts</option>
+                                                    <option value="MI">Michigan</option>
+                                                    <option value="MN">Minnesota</option>
+                                                    <option value="MS">Mississippi</option>
+                                                    <option value="MO">Missouri</option>
+                                                    <option value="MT">Montana</option>
+                                                    <option value="NE">Nebraska</option>
+                                                    <option value="NV">Nevada</option>
+                                                    <option value="NH">New Hampshire</option>
+                                                    <option value="NJ">New Jersey</option>
+                                                    <option value="NM">New Mexico</option>
+                                                    <option value="NY">New York</option>
+                                                    <option value="NC">North Carolina</option>
+                                                    <option value="ND">North Dakota</option>
+                                                    <option value="OH">Ohio</option>
+                                                    <option value="OK">Oklahoma</option>
+                                                    <option value="OR">Oregon</option>
+                                                    <option value="PA">Pennsylvania</option>
+                                                    <option value="RI">Rhode Island</option>
+                                                    <option value="SC">South Carolina</option>
+                                                    <option value="SD">South Dakota</option>
+                                                    <option value="TN">Tennessee</option>
+                                                    <option value="TX">Texas</option>
+                                                    <option value="UT">Utah</option>
+                                                    <option value="VT">Vermont</option>
+                                                    <option value="VA">Virginia</option>
+                                                    <option value="WA">Washington</option>
+                                                    <option value="WV">West Virginia</option>
+                                                    <option value="WI">Wisconsin</option>
+                                                    <option value="WY">Wyoming</option>
+                                                </select>				
+                                                <hr />
+                                                <button onClick={() => this.onSendQuery("TestResultRatio")} type="button" class="btn btn-outline-info">Test Result Ratio</button>
+                                                <button onClick={() => this.onSendQuery("HospitalizedICURatio")} type="button" class="btn btn-outline-info">Ratio of Hospitalized In ICU</button>
+                                                <button onClick={() => this.onSendQuery("PositiveUniqueRatio")} type="button" class="btn btn-outline-info">Ratio of Positive Tests which are Unique</button>
                                             </Card.Body>
                                         </Accordion.Collapse>
                                     </Card>
@@ -275,10 +385,10 @@ class Dashboard extends Component {
                                 <hr></hr>
                                 <Accordion>
                                     <Card>
-                                        <Accordion.Toggle as={Card.Header} eventKey="2">
+                                        <Accordion.Toggle as={Card.Header} eventKey="3">
                                             <button onClick={this.onTupleCount} type="button" class="btn btn-outline-info">Get Number of Stored Tuples</button>
                                         </Accordion.Toggle>
-                                        <Accordion.Collapse eventKey="2">
+                                        <Accordion.Collapse eventKey="3">
                                             <Card.Body>
                                                 Total stored tuples: {this.state.tupleCount}
                                             </Card.Body>
@@ -303,10 +413,7 @@ class Dashboard extends Component {
                                 </div>
                             </div>
                             <div id="chart">
-                                {this.state.type === "line"  ?
-                                <Line data={this.state.graphData} options={{maintainAspectRatio: true, title:{display: false}, legend: {display:true}}} /> :
-                                <Bar data={this.state.graphData} options={{maintainAspectRatio: true, title:{display: false}, legend: {display:false}}} />
-                                }
+                                {this.state.graph}
                             </div>
                             <div id="tableView" className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                                 <h2>Table View</h2>

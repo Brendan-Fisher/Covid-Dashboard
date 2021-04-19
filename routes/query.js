@@ -22,6 +22,7 @@ router.route("/").post(async function(req, res) {
 
         let query = "";
         let labels = 0;
+        let s = req.body.query.singleState;
         let s1 = req.body.query.stateOne;
         let s2 = req.body.query.stateTwo;
         let d1 = isEmpty(req.body.query.startDate) ? '2020-01-01' : req.body.query.startDate;
@@ -137,64 +138,95 @@ router.route("/").post(async function(req, res) {
                     }
                 )
                 break;
-            case 'GdpPerCase':
-                query =`SELECT Name, GdpPerCase 
+            case 'PopPositiveRatioOverTime':
+                query = `SELECT Month, Name, PercentPositive  
                         FROM (
-                            SELECT gdp/nullif(posTotal,0) as GdpPerCase, Name 
+                            SELECT Month, 100*(nullif(posTotal,0)/ population) as PercentPositive, Name 
                             FROM (
-                                SELECT sum(posTotal) as posTotal, Name, gdp 
+                                SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, max(posTotal) as posTotal, Name, Population 
                                 FROM Tests, State 
-                                WHERE Tests.state=state.code AND (Name = ${s1} OR Name = ${s2}) 
-                                GROUP BY Name, gdp
+                                WHERE   Tests.State=State.Code AND (Name = ${s1} OR Name = ${s2})
+                                GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Name, Population
                                 )
                             )
-                        ORDER BY GdpPerCase DESC`
+                            ORDER BY PercentPositive DESC`
+                sets = 2;
                 result = await connection.execute(
-                    "SELECT Name, GdpPerCase FROM (SELECT gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT sum(posTotal) as posTotal, Name, gdp FROM Tests, State WHERE Tests.state=state.code AND (Name = :s1 OR Name = :s2) GROUP BY Name, gdp)) ORDER BY GdpPerCase DESC",
+                    "SELECT Month, Name, PercentPositive FROM (SELECT Month, 100*(nullif(posTotal,0)/ population) as PercentPositive, Name FROM (SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, max(posTotal) as posTotal, Name, Population FROM Tests, State WHERE Tests.State=State.Code AND (Name = :s1 OR Name = :s2) GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Name, Population)) ORDER BY PercentPositive DESC",
                     {
                         s1: s1,
-                        s2: s2,
+                        s2: s2
                     }
                 )
                 break;
-            case 'GdpPerCaseNation':
-                query =`SELECT Name, GdpPerCase 
+            case 'PopDeathRatioOverTime':
+                query =`SELECT Month, Name, PercentDead  
                         FROM (
-                            SELECT gdp/nullif(posTotal,0) as GdpPerCase, Name 
+                            SELECT Month, 100*(nullif(deaths,0)/ population) as PercentDead, Name 
                             FROM (
-                                SELECT sum(posTotal) as posTotal, Name, gdp 
-                                FROM Tests, State GROUP BY Name, gdp
-                                )
-                            ) 
-                        ORDER BY GdpPerCase DESC`
-                result = await connection.execute(
-                    "SELECT Name, GdpPerCase FROM (SELECT gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT MAX(posTotal) as posTotal, Name, gdp FROM Tests, State GROUP BY Name, gdp)) ORDER BY GdpPerCase DESC",
-                )
-                break;
-            case 'GdpPerCaseOverTime':
-                query =`SELECT Month, Name, GdpPerCase  
-                        FROM (
-                            SELECT Month, gdp/nullif(posTotal,0) as GdpPerCase, Name 
-                            FROM (
-                                SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, sum(posTotal) as posTotal, Name, gdp 
-                                FROM Tests, State 
-                                WHERE   Tests.State=State.Code AND 
-                                        (Name = ${s1} OR Name = ${s2}) AND 
-                                        (TO_CHAR(REFDATE, 'YYYY-MM-DD') >= ${d1} AND TO_CHAR(REFDATE, 'YYYY-MM-DD') <= ${d2}) 
-                                GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Name, gdp
+                                SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, max(Deaths) as deaths, Name, Population 
+                                FROM Outcomes, State 
+                                WHERE Outcomes.State=State.Code AND (Name = ${s1} OR Name = ${s2})
+                                GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Name, Population
                                 )
                             )`
                 sets = 2;
                 result = await connection.execute(
-                    "SELECT Month, Name, GdpPerCase FROM (SELECT Month, gdp/nullif(posTotal,0) as GdpPerCase, Name FROM (SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, sum(posTotal) as posTotal, Name, gdp FROM Tests, State WHERE Tests.state=state.code AND (Name = :s1 OR Name = :s2) AND (TO_CHAR(REFDATE, 'YYYY-MM-DD') >= :d1 AND TO_CHAR(REFDATE, 'YYYY-MM-DD') <= :d2) GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Name, gdp))",
+                    "SELECT Month, Name, PercentDead FROM (SELECT Month, 100*(nullif(deaths,0)/ population) as PercentDead, Name FROM (SELECT TO_CHAR(refDate, 'MM-YYYY') AS Month, max(Deaths) as deaths, Name, Population FROM Outcomes, State WHERE Outcomes.State=State.Code AND (Name = :s1 OR Name = :s2) GROUP BY TO_CHAR(refDate, 'MM-YYYY'), Name, Population)) ORDER BY PercentDead DESC",
                     {
                         s1: s1,
-                        s2: s2,
-                        d1: d1,
-                        d2: d2,
+                        s2: s2
                     }
                 )
                 break;
+            case 'TestResultRatio':
+                query =`SELECT Month, STATE, POPULATION, PERPOS, PERNEG
+                        FROM (
+                                SELECT TO_CHAR(refDate, 'MM-YYYY') AS MONTH, 
+                                    STATE, 
+                                    POPULATION, 
+                                    (MAX(tests.posunique)/MAX(tests.total))*100 AS PERPOS,
+                                    (MAX(tests.NEGunique)/MAX(tests.total))*100 AS PERNEG
+                                FROM TESTS, STATE
+                                WHERE (STATE.CODE = TESTS.STATE) AND (Name = ${s1})
+                                GROUP BY TO_CHAR(refDate, 'MM-YYYY')
+                                ORDER BY MONTH
+                        );`
+                result = await connection.execute(
+                    "SELECT Month, PercentPositive, PercentNegative FROM (SELECT TO_CHAR(refDate, 'MM-YYYY') AS MONTH, (MAX(tests.posTotal)/MAX(tests.total)) * 100 AS PercentPositive, (MAX(tests.negTotal)/MAX(tests.total)) * 100 AS PercentNegative FROM TESTS, STATE WHERE (STATE.CODE = TESTS.STATE) AND (Name = :s) GROUP BY TO_CHAR(refDate, 'MM-YYYY') ORDER BY MONTH)",
+                    {
+                        s: s,
+                    }
+                )
+                break;
+            case 'HospitalizedICURatio':
+                query =`SELECT  TO_CHAR(Outcomes.refDate, 'YYYY-MM') AS Month,
+                                (MAX(Hospitalized)/ nullif(MAX(posTotal), 0)) * 100 AS PercentHospitalized, 
+                                (MAX(ICU) / nullif(MAX(Hospitalized), 0)) * 100 AS PercentHospitalizedInICU
+                        FROM Outcomes JOIN Tests 
+                            ON Outcomes.State = Tests.State AND Outcomes.refDate = Tests.refDate 
+                        WHERE Tests.State = ${s} GROUP BY TO_CHAR(Outcomes.refDate, 'YYYY-MM')`
+                result = await connection.execute(
+                    "SELECT  TO_CHAR(Outcomes.refDate, 'YYYY-MM') AS Month, (MAX(Hospitalized)/ nullif(MAX(posTotal), 0)) * 100 AS PercentHospitalized, (MAX(ICU) / nullif(MAX(Hospitalized), 0)) * 100 AS PercentHospitalizedInICU FROM State, Outcomes JOIN Tests ON Outcomes.State = Tests.State AND Outcomes.refDate = Tests.refDate WHERE Tests.State = State.Code AND State.Name = :s AND (TO_CHAR(Outcomes.refDate, 'YYYY-MM') >= '2020-01' AND TO_CHAR(Outcomes.refDate, 'YYYY-MM') <= '2020-12') GROUP BY TO_CHAR(Outcomes.refDate, 'YYYY-MM')",
+                    {
+                        s: s,
+                    }
+                )
+                break;
+            case 'PositiveUniqueRatio':
+                query =`SELECT  TO_CHAR(refDate, 'YYYY-MM') AS Month,
+                                (MAX(posUnique)/ nullif(MAX(posTotal), 0)) * 100 AS PercentUnique,
+                                MAX(posTotal) AS TotalPositive
+                        FROM Tests 
+                        WHERE Tests.State = 'FL' GROUP BY TO_CHAR(refDate, 'YYYY-MM')
+                        ORDER by Totalpositive desc`
+                result = await connection.execute(
+                    "SELECT  TO_CHAR(refDate, 'YYYY-MM') AS Month, (MAX(posUnique)/ nullif(MAX(posTotal), 0)) * 100 AS PercentUnique, MAX(posTotal) AS TotalPositive FROM Tests, State WHERE Tests.State = State.Code AND State.Name = :s AND (TO_CHAR(refDate, 'YYYY-MM') >= '2020-08' AND TO_CHAR(refDate, 'YYYY-MM') <= '2021-03') GROUP BY TO_CHAR(refDate, 'YYYY-MM') ORDER by Totalpositive desc",
+                    {
+                        s: s
+                    }
+                )
+                                
         }
 
         let response = {
